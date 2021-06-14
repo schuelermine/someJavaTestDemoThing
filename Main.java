@@ -1,13 +1,20 @@
 import java.math.BigInteger;
+import java.security.InvalidParameterException;
 
 public class Main {
     public static void main(String[] args) {
+        BigInteger max;
+        BigInteger max2;
+        try {
+            max = new BigInteger(args[0]);
+            max2 = new BigInteger(args[1]);
+        } catch (Exception e) {
+            throw new InvalidParameterException("\nSome parameters were incorrect.\nSyntax: {executable or java call} {list length} {snippet length}");
+        }
         System.out.println("Called with arguments:");
         for (String string : args) {
             System.out.println(string);
         }
-        BigInteger max = new BigInteger(args[0]);
-        BigInteger max2 = new BigInteger(args[1]);
         System.out.println("Generating list…");
         LList<BigInteger> list = new LList<>();
         for (var i = BigInteger.valueOf(0); i.compareTo(max) < 0; i = i.add(BigInteger.valueOf(1))) {
