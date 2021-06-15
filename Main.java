@@ -24,7 +24,7 @@ public class Main {
         System.out.println(list.getLength().toString(10));
         System.out.println("Printing requested " + max2.toString(10) + " elements");
         for (var i = BigInteger.valueOf(0); i.compareTo(max2.min(max)) < 0; i = i.add(BigInteger.valueOf(1))) {
-            System.out.println(i.toString(10));
+            System.out.println(list.getElementAt(i).toString(10));
         }
     }
 }
