@@ -1,5 +1,4 @@
 import java.math.BigInteger;
-import java.security.InvalidParameterException;
 
 public class Main {
     public static void main(String[] args) {
@@ -9,7 +8,7 @@ public class Main {
             max = new BigInteger(args[0]);
             max2 = new BigInteger(args[1]);
         } catch (Exception e) {
-            throw new InvalidParameterException("\nSome parameters were incorrect.\nSyntax: {executable or java call} {list length} {snippet length}");
+            throw new IllegalArgumentException("\nSome parameters were incorrect.\nSyntax: {executable or java call} {list length} {snippet length}");
         }
         System.out.println("Called with arguments:");
         for (String string : args) {
