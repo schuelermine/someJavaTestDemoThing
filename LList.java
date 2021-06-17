@@ -21,8 +21,39 @@ public class LList<T> {
 
     // #region Accessors
     // Get value at index (with various types)
-    public Maybe<T> maybeGetElementAt(BigInteger index) throws IllegalArgumentException {
-        if (index.compareTo(BigInteger.valueOf(0)) < 0) {
+    public Maybe<T> maybeGetElementAtBig(BigInteger index) throws IllegalArgumentException {
+        if (index.compareTo(LList.zero) < 0) {
+            throw new IllegalArgumentException();
+        }
+        var tail = this;
+        while (!tail.isEmpty()) {
+            if (index.equals(LList.zero)) {
+                return new Maybe<>(tail.getHead());
+            }
+            tail = tail.getTail();
+            index = index.subtract(LList.one);
+        }
+        return new Maybe<>();
+    }
+    public T getElementAtBigNull(BigInteger index) throws IllegalArgumentException {
+        return this.maybeGetElementAtBig(index).getValueNull();
+    }
+    public T getElementAtBig(BigInteger index) throws NoSuchElementException, IllegalArgumentException {
+        return this.maybeGetElementAtBig(index).getValue();
+    }
+    public Maybe<T> maybeGetElementAt(long index) throws IllegalArgumentException {
+        return this.maybeGetElementAtBig(BigInteger.valueOf(index));
+    }
+    public T getElementAtNull(long index) throws IllegalArgumentException {
+        return this.maybeGetElementAt(index).getValueNull();
+    }
+    public T getElementAt(long index) throws NoSuchElementException, IllegalArgumentException {
+        return this.maybeGetElementAt(index).getValue();
+    }
+
+
+    public Maybe<T> maybeGetElementAtBigRecursive(BigInteger index) throws IllegalArgumentException {
+        if (index.compareTo(LList.zero) < 0) {
             throw new IllegalArgumentException();
         }
         if (!this.value.isPresent()) {
@@ -31,40 +62,37 @@ public class LList<T> {
         if (index.equals(BigInteger.valueOf(0))) {
             return new Maybe<>(this.getHead());
         }
-        return
-            this.getTail().
-            maybeGetElementAt(index.subtract(BigInteger.valueOf(1)));
+        return this.getTail().
+            maybeGetElementAtBigRecursive(index.subtract(BigInteger.valueOf(1)));
     }
-    public T getElementAtNull(BigInteger index) throws IllegalArgumentException {
-        return this.maybeGetElementAt(index).getValueNull();
+    public T getElementAtBigNullRecursive(BigInteger index) throws IllegalArgumentException {
+        return this.maybeGetElementAtBigRecursive(index).getValueNull();
     }
-    public T getElementAt(BigInteger index) throws NoSuchElementException, IllegalArgumentException {
-        return this.maybeGetElementAt(index).getValue();
+    public T getElementAtBigRecursive(BigInteger index) throws NoSuchElementException, IllegalArgumentException {
+        return this.maybeGetElementAtBigRecursive(index).getValue();
     }
-    public Maybe<T> maybeGetElementAtLong(long index) throws IllegalArgumentException {
-        return this.maybeGetElementAt(BigInteger.valueOf(index));
+    public Maybe<T> maybeGetElementAtRecursive(long index) throws IllegalArgumentException {
+        return this.maybeGetElementAtBigRecursive(BigInteger.valueOf(index));
     }
-    public T getElementAtLongNull(long index) throws IllegalArgumentException {
-        return this.maybeGetElementAtLong(index).getValueNull();
+    public T getElementAtNullRecursive(long index) throws IllegalArgumentException {
+        return this.maybeGetElementAtRecursive(index).getValueNull();
     }
-    public T getElementAtLong(long index) throws NoSuchElementException, IllegalArgumentException {
-        return this.maybeGetElementAtLong(index).getValue();
+    public T getElementAtRecursive(long index) throws NoSuchElementException, IllegalArgumentException {
+        return this.maybeGetElementAtRecursive(index).getValue();
     }
 
     // Get individual components as Maybe
     public Maybe<T> maybeGetHead() {
         if (this.value.isPresent()) {
             return new Maybe<>(this.value.getValue().getValue1());
-        } else {
-            return new Maybe<>();
         }
+        return new Maybe<>();
     }
     public Maybe<LList<T>> maybeGetTail() {
         if (this.value.isPresent()) {
             return new Maybe<>(this.value.getValue().getValue2());
-        } else {
-            return new Maybe<>();
         }
+        return new Maybe<>();
     }
 
     // Get individual components with null representing absence
@@ -72,16 +100,14 @@ public class LList<T> {
     public T getHeadNull() {
         if (this.value.isPresent()) {
             return this.value.getValue().getValue1();
-        } else {
-            return null;
         }
+        return null;
     }
     public LList<T> getTailNull() {
         if (this.value.isPresent()) {
             return this.value.getValue().getValue2();
-        } else {
-            return null;
         }
+        return null;
     }
 
     // Get the tail of the list with an empty list representing absence
@@ -89,9 +115,8 @@ public class LList<T> {
     public LList<T> getTailList() {
         if (this.value.isPresent()) {
             return this.value.getValue().getValue2();
-        } else {
-            return new LList<>();
         }
+        return new LList<>();
     }
 
     // Get a value that’s known to exist
@@ -99,16 +124,14 @@ public class LList<T> {
     public T getHead() throws NoSuchElementException {
         if (this.value.isPresent()) {
             return this.value.getValue().getValue1();
-        } else {
-            throw new NoSuchElementException();
         }
+        throw new NoSuchElementException();
     }
     public LList<T> getTail() throws NoSuchElementException {
         if (this.value.isPresent()) {
             return this.value.getValue().getValue2();
-        } else {
-            throw new NoSuchElementException();
         }
+        throw new NoSuchElementException();
     }
 
     // More direct getters for the value property
@@ -118,9 +141,8 @@ public class LList<T> {
     public Pair<T,LList<T>> getValueNull() {
         if (this.value.isPresent()) {
             return this.value.getValue();
-        } else {
-            return null;
         }
+        return null;
     }
     // #endregion
 
@@ -134,26 +156,48 @@ public class LList<T> {
     public boolean isSingleton() {
         if (this.value.isPresent()) {
             return this.getTail().isEmpty();
-        } else {
-            return false;
         }
+        return false;
     }
 
     // Does the list have less than two elements?
     public boolean isEmptyOrSingleton() {
         if (this.value.isPresent()) {
             return this.getTail().isEmpty();
-        } else {
-            return true;
         }
+        return true;
     }
 
     // Gets the length of the list
-    public BigInteger getLength() {
+    public long getLength() {
+        var tail = this;
+        long length = 0;
+        while (!tail.isEmpty()) {
+            length++;
+            tail = tail.getTail();
+        }
+        return length;
+    }
+    public BigInteger getBigLength() {
+        var tail = this;
+        var length = LList.zero;
+        while (!tail.isEmpty()) {
+            length = length.add(LList.one);
+            tail = tail.getTail();
+        }
+        return length;
+    }
+    public long getLengthRecursive() {
+        if (this.isEmpty()) {
+            return 0;
+        }
+        return this.getTail().getLengthRecursive() + 1;
+    }
+    public BigInteger getBigLengthRecursive() {
         if (this.isEmpty()) {
             return LList.zero;
         }
-        return this.getTail().getLength().add(LList.one);
+        return this.getTail().getBigLengthRecursive().add(LList.one);
     }
     // #endregion Utilities
 
